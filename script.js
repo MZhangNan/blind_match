@@ -321,6 +321,14 @@ class Game {
         this.overlay = document.getElementById('memory-overlay');
         this.memGrid = document.getElementById('memory-grid');
         this.vicScreen = document.getElementById('victory-screen');
+        this.trialModal = document.getElementById('trial-offer-modal');
+        this.btnTrialEntry = document.getElementById('btn-trial-entry');
+        this.btnShuffle = document.getElementById('btn-shuffle');
+
+        // State
+        this.rescueCount = 2; // Start with 2
+        this.flashVerifyLevel = 0;
+        this.deferredTrial = false;
 
         this.bindEvents();
     }
@@ -334,14 +342,40 @@ class Game {
         });
 
         document.getElementById('btn-shuffle').addEventListener('click', () => {
-            this.audio.checkResume();
-            this.audio.playShuffle();
-            this.board.shuffleRemaining();
-            this.board.checkBlockedStatus();
-            if (this.selectedTile) {
-                this.selectedTile.el.classList.remove('selected');
-                this.selectedTile = null;
+            if (this.isBlindMode) return;
+            if (this.rescueCount > 0) {
+                this.rescueCount--;
+                this.updateRescueUI();
+                this.audio.checkResume();
+                this.audio.playShuffle();
+                this.board.shuffleRemaining();
+                this.board.checkBlockedStatus();
+                if (this.selectedTile) {
+                    this.selectedTile.el.classList.remove('selected');
+                    this.selectedTile = null;
+                }
+            } else {
+                this.audio.playInvalid();
+                const btn = document.getElementById('btn-shuffle');
+                btn.classList.add('shake');
+                setTimeout(() => btn.classList.remove('shake'), 400);
             }
+        });
+
+        // Trial Offer Buttons
+        document.getElementById('btn-offer-start').addEventListener('click', () => {
+            this.handleTrialChoice('START');
+        });
+        document.getElementById('btn-offer-later').addEventListener('click', () => {
+            this.handleTrialChoice('LATER');
+        });
+        document.getElementById('btn-offer-dismiss').addEventListener('click', () => {
+            this.handleTrialChoice('DISMISS');
+        });
+
+        // Deferred Entry
+        this.btnTrialEntry.addEventListener('click', () => {
+            this.handleTrialChoice('START_DEFERRED');
         });
 
         // Victory Buttons
@@ -377,6 +411,13 @@ class Game {
             this.boardDiv.appendChild(el);
         });
         this.board.checkBlockedStatus();
+        this.updateRescueUI();
+        this.btnTrialEntry.classList.add('hidden');
+        this.deferredTrial = false;
+    }
+
+    updateRescueUI() {
+        this.btnShuffle.textContent = `🔀 Shuffle (${this.rescueCount})`;
     }
 
     handleTileClick(tile) {
@@ -436,7 +477,9 @@ class Game {
         if (this.board.tiles.every(t => t.removed)) {
             setTimeout(() => this.triggerVictory(), 1000);
         } else if (t1.isSpecial || t2.isSpecial) {
-            setTimeout(() => this.triggerBlindMode(), 500);
+            if (!this.deferredTrial) {
+                setTimeout(() => this.showTrialOffer(), 500);
+            }
         }
     }
 
@@ -447,11 +490,48 @@ class Game {
         this.vicScreen.classList.remove('hidden');
     }
 
-    triggerBlindMode() {
+    showTrialOffer() {
+        this.trialModal.classList.remove('hidden');
+        this.audio.playSelect(); // Sound effect
+        // If we had a pause mechanic, we'd pause main timer here
+    }
+
+    handleTrialChoice(choice) {
+        this.trialModal.classList.add('hidden');
+
+        if (choice === 'START' || choice === 'START_DEFERRED') {
+            if (choice === 'START_DEFERRED') {
+                this.deferredTrial = false;
+                this.btnTrialEntry.classList.add('hidden');
+            }
+            this.startBlindMode();
+        } else if (choice === 'LATER') {
+            this.deferredTrial = true;
+            this.btnTrialEntry.classList.remove('hidden');
+        } else {
+            // DISMISS
+            // No action needed, just close
+        }
+    }
+
+    getFlashConfig(level) {
+        // Level 0: 3 pairs, 8s
+        // Level 1+: 4 pairs, 10s
+        // Level High: 5 pairs
+        if (level === 0) return { pairs: 3, time: 8, show: 1500 };
+        if (level < 3) return { pairs: 4, time: 10, show: 1500 };
+        return { pairs: 5, time: 12, show: 1200 };
+    }
+
+    startBlindMode() {
         this.isBlindMode = true;
         this.audio.startBGM('blind');
         this.overlay.classList.remove('hidden');
 
+        // Flash Config
+        const config = this.getFlashConfig(this.flashVerifyLevel);
+
+        // Generate Memory Tiles
         const activeTiles = this.board.tiles.filter(t => !t.removed);
         let typeMap = {};
         activeTiles.forEach(t => {
@@ -465,7 +545,10 @@ class Game {
             while (list.length >= 2) availablePairs.push([list.pop(), list.pop()]);
         }
         availablePairs.sort(() => Math.random() - 0.5);
-        const selectedPairs = availablePairs.slice(0, 10);
+
+        // Dynamic Pair Count
+        const pairCount = Math.min(config.pairs, availablePairs.length);
+        const selectedPairs = availablePairs.slice(0, pairCount);
 
         this.memoryTiles = [];
         selectedPairs.forEach(pair => {
@@ -476,22 +559,18 @@ class Game {
 
         this.renderMemoryGrid();
 
-        let count = 5;
-        const countEl = document.getElementById('countdown');
-        const timerEl = document.querySelector('.blind-timer');
-        timerEl.classList.add('hidden');
+        // Flash Logic: Show tiles, then hide
+        const countEl = document.getElementById('countdown'); // Reuse for instructions or just hide
+        countEl.textContent = "MEMORIZE!";
         countEl.classList.remove('hidden');
-        countEl.textContent = count;
 
-        const interval = setInterval(() => {
-            count--;
-            countEl.textContent = count;
-            if (count <= 0) {
-                clearInterval(interval);
-                countEl.classList.add('hidden');
-                this.startBlindInteraction();
-            }
-        }, 1000);
+        // Open all tiles
+        this.memoryTiles.forEach(mt => mt.dom.classList.remove('flipped'));
+
+        setTimeout(() => {
+            countEl.classList.add('hidden');
+            this.startBlindInteraction(config.time);
+        }, config.show);
     }
 
     renderMemoryGrid() {
@@ -506,13 +585,13 @@ class Game {
         });
     }
 
-    startBlindInteraction() {
+    startBlindInteraction(duration) {
         this.memoryTiles.forEach(mt => mt.dom.classList.add('flipped'));
         const timerEl = document.querySelector('.blind-timer');
         const timeVal = document.getElementById('blind-time');
         timerEl.classList.remove('hidden');
 
-        let timeLeft = 30;
+        let timeLeft = duration;
         timeVal.textContent = timeLeft;
         this.memLocked = false;
         this.memSelected = null;
@@ -544,7 +623,7 @@ class Game {
                     this.memSelected = null;
                     this.memLocked = false;
 
-                    if (this.memoryTiles.every(t => t.matched)) this.endBlindMode();
+                    if (this.memoryTiles.every(t => t.matched)) this.endBlindMode(true);
                 }, 500);
 
                 this.score += 200;
@@ -561,13 +640,17 @@ class Game {
         }
     }
 
-    endBlindMode() {
+    endBlindMode(forcedSuccess = false) {
         clearInterval(this.blindInterval);
         this.overlay.classList.add('hidden');
         this.isBlindMode = false;
 
         this.audio.startBGM('main');
 
+        // Check Success
+        const allMatched = this.memoryTiles.every(t => t.matched);
+
+        // Remove matched tiles from board (Consolation/Progress)
         let removeCount = 0;
         this.memoryTiles.forEach(mt => {
             if (mt.matched && !mt.origin.removed) {
@@ -576,6 +659,37 @@ class Game {
                 removeCount++;
             }
         });
+
+        if (allMatched) {
+            this.rescueCount++;
+            this.flashVerifyLevel++; // Increase difficulty next time
+            this.updateRescueUI();
+            this.audio.playVictory(); // Short victory sound
+
+            // Visual Feedback specifically for Reward?
+            // For now, simple console or toast. The UI update is the main feedback.
+            // Maybe animate the shuffle button?
+            const btn = document.getElementById('btn-shuffle');
+            btn.classList.add('pulse-reward'); // We can add this class to CSS
+            setTimeout(() => btn.classList.remove('pulse-reward'), 1000);
+
+            // Show a quick toast text
+            const hud = document.getElementById('ui-hud');
+            const toast = document.createElement('div');
+            toast.textContent = "+1 🛡️ Rescue Charm!";
+            toast.style.position = 'absolute';
+            toast.style.color = '#4ade80';
+            toast.style.fontWeight = 'bold';
+            toast.style.fontSize = '1.5rem';
+            toast.style.top = '100%';
+            toast.style.left = '50%';
+            toast.style.transform = 'translateX(-50%)';
+            hud.appendChild(toast);
+            setTimeout(() => toast.remove(), 2000);
+        } else {
+            // Failed to complete in time
+            // No penalty, but no reward.
+        }
 
         if (removeCount > 0) this.board.checkBlockedStatus();
 

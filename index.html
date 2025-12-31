@@ -21,7 +21,8 @@
             </div>
             <div class="title">Crazy Blind Match</div>
             <div class="controls">
-                <button id="btn-shuffle" class="btn-tool">🔀 Shuffle</button>
+                <button id="btn-trial-entry" class="btn-tool hidden">🌟 Trial</button>
+                <button id="btn-shuffle" class="btn-tool">🔀 Shuffle (2)</button>
                 <div id="audio-toggle" class="btn-icon">🔊</div>
             </div>
         </div>
@@ -60,6 +61,20 @@
             <h1>Crazy Blind Match</h1>
             <p>Match pairs. Find the Golden Pair to enter Blind Mode!</p>
             <button id="btn-start" class="btn-primary">Start Game</button>
+        </div>
+
+        <!-- Trial Offer Modal -->
+        <div id="trial-offer-modal" class="hidden">
+            <div class="overlay-content">
+                <h2>🌟 Spirit Trial Detected</h2>
+                <p>Match pairs in limited time.</p>
+                <p class="reward-hint">Reward: 🛡️ Rescue Charm</p>
+                <div class="btn-group">
+                    <button id="btn-offer-start" class="btn-primary">Start Trial</button>
+                    <button id="btn-offer-later" class="btn-secondary">Later</button>
+                    <button id="btn-offer-dismiss" class="btn-outline">Dismiss</button>
+                </div>
+            </div>
         </div>
     </div>
 
