@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crazy Blind Match - 疯狂盲消吧</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+    <div id="game-container">
+        <!-- Main HUD -->
+        <div id="ui-hud">
+            <div class="score-board">
+                <span>Score: <span id="score">0</span></span>
+            </div>
+            <div class="title">Crazy Blind Match</div>
+            <div class="controls">
+                <button id="btn-shuffle" class="btn-tool">🔀 Shuffle</button>
+                <div id="audio-toggle" class="btn-icon">🔊</div>
+            </div>
+        </div>
+
+        <!-- Main Game Board -->
+        <div id="game-board">
+            <!-- Tiles will be injected here by JS -->
+        </div>
+
+        <!-- Blind "Memory" Overlay -->
+        <div id="memory-overlay" class="hidden">
+            <div class="overlay-content">
+                <h2>Blind Mode Activated!</h2>
+                <div id="countdown">5</div>
+                <div id="memory-grid">
+                    <!-- 20 tiles for blind match -->
+                </div>
+                <div class="blind-timer hidden">Time Left: <span id="blind-time">30</span>s</div>
+            </div>
+        </div>
+
+        <!-- Victory Screen -->
+        <div id="victory-screen" class="hidden">
+            <div class="overlay-content">
+                <h1>VICTORY!</h1>
+                <p>Score: <span id="final-score">0</span></p>
+                <div class="btn-group">
+                    <button id="btn-next" class="btn-primary">Next Level</button>
+                    <button id="btn-end" class="btn-secondary">End Game</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Start Screen -->
+        <div id="start-screen">
+            <h1>Crazy Blind Match</h1>
+            <p>Match pairs. Find the Golden Pair to enter Blind Mode!</p>
+            <button id="btn-start" class="btn-primary">Start Game</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
