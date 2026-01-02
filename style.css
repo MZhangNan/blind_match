@@ -213,7 +213,7 @@ body {
 
 #memory-grid {
     display: grid;
-    grid-template-columns: repeat(5, 60px);
+    grid-template-columns: repeat(3, 60px);
     gap: 10px;
     margin: 20px;
     justify-content: center;

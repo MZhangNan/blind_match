@@ -123,7 +123,11 @@ const TEXTS = {
         msgFailBody: "Don't give up! Look for the next Golden Pair.",
         btnContinue: "Continue",
         btnBack: "Back",
-        levelPrefix: "Level: "
+        levelPrefix: "Level: ",
+        victoryTitle: "VICTORY!",
+        victoryScore: "Score:",
+        btnNextLevel: "Next Level",
+        btnEndGame: "End Game"
     },
     cn: {
         gameTitle: "疯狂盲消吧",
@@ -145,7 +149,11 @@ const TEXTS = {
         msgFailBody: "别灰心！寻找下一对金色灵牌吧。",
         btnContinue: "继续游戏",
         btnBack: "返回",
-        levelPrefix: "当前等级: "
+        levelPrefix: "当前等级: ",
+        victoryTitle: "胜利！",
+        victoryScore: "得分：",
+        btnNextLevel: "下一关",
+        btnEndGame: "结束游戏"
     }
 };
 
