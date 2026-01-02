@@ -17,9 +17,9 @@
         <!-- Main HUD -->
         <div id="ui-hud">
             <div class="score-board">
-                <span>Score: <span id="score">0</span></span>
+                <span data-i18n="score">Score: </span><span id="score">0</span>
             </div>
-            <div class="title">Crazy Blind Match</div>
+            <div class="title" data-i18n="gameTitle">Crazy Blind Match</div>
             <div class="controls">
                 <button id="btn-trial-entry" class="btn-tool hidden">🌟 Trial</button>
                 <button id="btn-shuffle" class="btn-tool">🔀 Shuffle (2)</button>
@@ -56,23 +56,40 @@
             </div>
         </div>
 
+        <!-- Generic Message Modal (Success/Fail) -->
+        <div id="msg-modal" class="hidden">
+            <div class="overlay-content">
+                <h2 id="msg-title">TITLE</h2>
+                <div id="msg-body">Message body...</div>
+                <button id="msg-btn" class="btn-primary" style="margin-top:20px;">OK</button>
+            </div>
+        </div>
+
         <!-- Start Screen -->
         <div id="start-screen">
-            <h1>Crazy Blind Match</h1>
-            <p>Match pairs. Find the Golden Pair to enter Blind Mode!</p>
-            <button id="btn-start" class="btn-primary">Start Game</button>
+            <div class="lang-switch">
+                <button class="btn-lang" data-lang="en">🇺🇸 EN</button>
+                <button class="btn-lang" data-lang="cn">🇨🇳 CN</button>
+            </div>
+            <h1 data-i18n="gameTitle">Crazy Blind Match</h1>
+            <p data-i18n="startDesc">Match pairs. Find the Golden Pair to enter Blind Mode!</p>
+            <button id="btn-start" class="btn-primary" data-i18n="btnStart">Start Game</button>
         </div>
 
         <!-- Trial Offer Modal -->
         <div id="trial-offer-modal" class="hidden">
             <div class="overlay-content">
-                <h2>🌟 Spirit Trial Detected</h2>
-                <p>Match pairs in limited time.</p>
-                <p class="reward-hint">Reward: 🛡️ Rescue Charm</p>
+                <h2 data-i18n="trialTitle">🌟 Spirit Trial Detected</h2>
+                <p id="trial-level" class="level-badge">Level: 1</p>
+                <p data-i18n="trialDesc">Match pairs in limited time.</p>
+                <p class="reward-hint" data-i18n="trialReward">Reward: 🛡️ Rescue Charm</p>
+                <div class="trial-rules">
+                    <p data-i18n="trialRules">Rule: Memorize quickly! Match 3x3 grid.</p>
+                </div>
                 <div class="btn-group">
-                    <button id="btn-offer-start" class="btn-primary">Start Trial</button>
-                    <button id="btn-offer-later" class="btn-secondary">Later</button>
-                    <button id="btn-offer-dismiss" class="btn-outline">Dismiss</button>
+                    <button id="btn-offer-start" class="btn-primary" data-i18n="btnStartTrial">Start Now</button>
+                    <button id="btn-offer-later" class="btn-secondary" data-i18n="btnLater">Later</button>
+                    <button id="btn-offer-dismiss" class="btn-outline" data-i18n="btnDismiss">Dismiss</button>
                 </div>
             </div>
         </div>

@@ -81,6 +81,74 @@ class AudioManager {
     }
 }
 
+// --- Global Sprite Data ---
+const SPRITE_MAP = {
+    '🀀': 'feng_dong', '🀁': 'feng_nan', '🀂': 'feng_xi', '🀃': 'feng_bei',
+    '🀄': 'jian_zhong', '🀅': 'jian_fa', '🀆': 'jian_bai',
+    '🀇': 'wan_1', '🀈': 'wan_2', '🀉': 'wan_3', '🀊': 'wan_4', '🀋': 'wan_5',
+    '🀚': 'tong_2', '🀛': 'tong_3', '🀜': 'tong_4', '🀝': 'tong_5', '🀙': 'tong_1',
+    '🀐': 'tiao_1', '🀑': 'tiao_2', '🀒': 'tiao_3', '🀓': 'tiao_4', '🀔': 'tiao_5'
+};
+
+const SPRITE_FRAMES = {
+    "feng_dong": { x: 0, y: 0 }, "feng_nan": { x: 140, y: 0 }, "feng_xi": { x: 280, y: 0 }, "feng_bei": { x: 420, y: 0 },
+    "jian_zhong": { x: 560, y: 0 }, "jian_fa": { x: 700, y: 0 }, "jian_bai": { x: 840, y: 0 },
+    "wan_1": { x: 0, y: 180 }, "wan_2": { x: 140, y: 180 }, "wan_3": { x: 280, y: 180 }, "wan_4": { x: 420, y: 180 }, "wan_5": { x: 560, y: 180 },
+    "wan_6": { x: 700, y: 180 }, "wan_7": { x: 840, y: 180 }, "wan_8": { x: 0, y: 360 }, "wan_9": { x: 140, y: 360 },
+    "tiao_1": { x: 280, y: 360 }, "tiao_2": { x: 420, y: 360 }, "tiao_3": { x: 560, y: 360 }, "tiao_4": { x: 700, y: 360 }, "tiao_5": { x: 840, y: 360 },
+    "tiao_6": { x: 0, y: 540 }, "tiao_7": { x: 140, y: 540 }, "tiao_8": { x: 280, y: 540 }, "tiao_9": { x: 420, y: 540 },
+    "tong_1": { x: 560, y: 540 }, "tong_2": { x: 700, y: 540 }, "tong_3": { x: 840, y: 540 },
+    "tong_4": { x: 0, y: 720 }, "tong_5": { x: 140, y: 720 }, "tong_6": { x: 280, y: 720 }, "tong_7": { x: 420, y: 720 }, "tong_8": { x: 560, y: 720 }, "tong_9": { x: 700, y: 720 },
+    "back": { x: 840, y: 720 }
+};
+
+const TEXTS = {
+    en: {
+        gameTitle: "Crazy Blind Match",
+        startDesc: "Match pairs. Find the Golden Pair to enter Blind Mode!",
+        btnStart: "Start Game",
+        score: "Score: ",
+        trialTitle: "🌟 Spirit Trial Detected",
+        trialDesc: "Match pairs in limited time.",
+        trialReward: "Reward: 🛡️ Rescue Charm",
+        trialRules: "Rule: Memorize quickly! Match 3x3 grid.",
+        btnStartTrial: "Start Now",
+        btnLater: "Later",
+        btnDismiss: "Dismiss",
+        btnShuffle: "🔀 Shuffle",
+        btnTrial: "🌟 Trial",
+        msgSuccessTitle: "VICTORY!",
+        msgSuccessBody: "Great job! You earned +1 Rescue Charm.",
+        msgFailTitle: "TRIAL FAILED",
+        msgFailBody: "Don't give up! Look for the next Golden Pair.",
+        btnContinue: "Continue",
+        btnBack: "Back",
+        levelPrefix: "Level: "
+    },
+    cn: {
+        gameTitle: "疯狂盲消吧",
+        startDesc: "消除麻将。找到金色灵牌进入盲消模式！",
+        btnStart: "开始游戏",
+        score: "分数: ",
+        trialTitle: "🌟 发现灵牌试炼",
+        trialDesc: "在有限时间内完成配对。",
+        trialReward: "奖励: 🛡️ 救援符",
+        trialRules: "规则：快速记忆！消除3x3方阵。",
+        btnStartTrial: "立即挑战",
+        btnLater: "稍后再说",
+        btnDismiss: "忽略",
+        btnShuffle: "🔀 洗牌",
+        btnTrial: "🌟 挑战",
+        msgSuccessTitle: "挑战成功！",
+        msgSuccessBody: "太棒了！获得奖励 +1 救援符。",
+        msgFailTitle: "挑战失败",
+        msgFailBody: "别灰心！寻找下一对金色灵牌吧。",
+        btnContinue: "继续游戏",
+        btnBack: "返回",
+        levelPrefix: "当前等级: "
+    }
+};
+
 class Tile {
     constructor(id, type, x, y, z) {
         this.id = id;
@@ -98,7 +166,7 @@ class Tile {
     createDOM() {
         const el = document.createElement('div');
         el.className = 'tile';
-        el.textContent = this.displayChar;
+        // el.textContent = this.displayChar; // Removed for sprite
 
         const domX = (this.x * 50) + (window.innerWidth / 2) - 150;
         const domY = (this.y * 65) - (this.z * 5) + 100;
@@ -116,7 +184,38 @@ class Tile {
 
     updateDOM() {
         if (!this.el) return;
-        this.el.textContent = this.displayChar;
+        // this.el.textContent = this.displayChar; // Removed
+
+        let spriteKey = 'back';
+        let frame = { x: 840, y: 720 }; // Default back
+
+        const key = SPRITE_MAP[this.type];
+        if (key && SPRITE_FRAMES[key]) {
+            spriteKey = key;
+            frame = SPRITE_FRAMES[key];
+        }
+
+        // Apply Global Scale (54/128 approx 0.421875)
+        const SCALE = 54 / 128;
+        const bgX = -frame.x * SCALE;
+        const bgY = -frame.y * SCALE;
+
+        this.el.style.backgroundPosition = `${bgX}px ${bgY}px`;
+
+        // Overlay Spirit Mark
+        if (this.isSpecial) {
+            let mark = this.el.querySelector('.spirit-mark');
+            if (!mark) {
+                mark = document.createElement('div');
+                mark.className = 'spirit-mark';
+                mark.textContent = '🌟'; // Emoji Overlay
+                this.el.appendChild(mark);
+            }
+        } else {
+            const mark = this.el.querySelector('.spirit-mark');
+            if (mark) mark.remove();
+        }
+
         if (this.isSpecial) this.el.classList.add('special');
         else this.el.classList.remove('special');
 
@@ -328,12 +427,54 @@ class Game {
         // State
         this.rescueCount = 2; // Start with 2
         this.flashVerifyLevel = 0;
+        this.flashVerifyLevel = 0;
         this.deferredTrial = false;
+
+        // Localization
+        this.currentLang = localStorage.getItem('lang') || 'en';
+        this.setLanguage(this.currentLang);
 
         this.bindEvents();
     }
 
+    setLanguage(lang) {
+        this.currentLang = lang;
+        localStorage.setItem('lang', lang);
+
+        // Update Body Class
+        if (lang === 'cn') document.body.classList.add('lang-cn');
+        else document.body.classList.remove('lang-cn');
+
+        // Update Button States
+        document.querySelectorAll('.btn-lang').forEach(btn => {
+            if (btn.dataset.lang === lang) btn.classList.add('active');
+            else btn.classList.remove('active');
+        });
+
+        this.updateTexts();
+    }
+
+    updateTexts() {
+        const t = TEXTS[this.currentLang];
+        // Static elements
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+            const key = el.dataset.i18n;
+            if (t[key]) el.textContent = t[key];
+        });
+
+        // Dynamic elements update
+        this.updateRescueUI(); // Updates shuffle button text
+        this.btnTrialEntry.textContent = t.btnTrial;
+    }
+
     bindEvents() {
+        // Lang Switch
+        document.querySelectorAll('.btn-lang').forEach(btn => {
+            btn.addEventListener('click', () => {
+                this.setLanguage(btn.dataset.lang);
+            });
+        });
+
         document.getElementById('btn-start').addEventListener('click', () => {
             this.startScreen.style.display = 'none';
             this.audio.checkResume();
@@ -381,8 +522,7 @@ class Game {
         // Victory Buttons
         document.getElementById('btn-next').addEventListener('click', () => {
             this.vicScreen.classList.add('hidden');
-            this.score = 0;
-            this.uiScore.textContent = 0;
+            // Score accumulates!
             this.startLevel();
             this.audio.startBGM('main');
         });
@@ -417,7 +557,9 @@ class Game {
     }
 
     updateRescueUI() {
-        this.btnShuffle.textContent = `🔀 Shuffle (${this.rescueCount})`;
+        // Localized shuffle text
+        const t = TEXTS[this.currentLang];
+        this.btnShuffle.textContent = `${t.btnShuffle} (${this.rescueCount})`;
     }
 
     handleTileClick(tile) {
@@ -492,8 +634,12 @@ class Game {
 
     showTrialOffer() {
         this.trialModal.classList.remove('hidden');
-        this.audio.playSelect(); // Sound effect
-        // If we had a pause mechanic, we'd pause main timer here
+        this.audio.playSelect();
+
+        // Show Level
+        const t = TEXTS[this.currentLang];
+        const lvlEl = document.getElementById('trial-level');
+        if (lvlEl) lvlEl.textContent = `${t.levelPrefix}${this.flashVerifyLevel + 1}`;
     }
 
     handleTrialChoice(choice) {
@@ -515,12 +661,13 @@ class Game {
     }
 
     getFlashConfig(level) {
-        // Level 0: 3 pairs, 8s
-        // Level 1+: 4 pairs, 10s
-        // Level High: 5 pairs
-        if (level === 0) return { pairs: 3, time: 8, show: 1500 };
-        if (level < 3) return { pairs: 4, time: 10, show: 1500 };
-        return { pairs: 5, time: 12, show: 1200 };
+        // Base logic: 1.5s show time, reduced by 0.2s check level. Min 0.5s.
+        // Pairs: 4 fixed for now.
+        const BASE_SHOW = 1500;
+        const REDUCTION = 200;
+        const showTime = Math.max(500, BASE_SHOW - (level * REDUCTION));
+
+        return { pairs: 4, time: 10, show: showTime };
     }
 
     startBlindMode() {
@@ -546,8 +693,8 @@ class Game {
         }
         availablePairs.sort(() => Math.random() - 0.5);
 
-        // Dynamic Pair Count
-        const pairCount = Math.min(config.pairs, availablePairs.length);
+        // Dynamic Pair Count (Fixed to 4 for 3x3 grid - 1)
+        const pairCount = 4;
         const selectedPairs = availablePairs.slice(0, pairCount);
 
         this.memoryTiles = [];
@@ -557,6 +704,9 @@ class Game {
         });
         this.memoryTiles.sort(() => Math.random() - 0.5);
 
+        // Insert NULL at index 4 for center hole (Total 9 items)
+        this.memoryTiles.splice(4, 0, null);
+
         this.renderMemoryGrid();
 
         // Flash Logic: Show tiles, then hide
@@ -565,7 +715,9 @@ class Game {
         countEl.classList.remove('hidden');
 
         // Open all tiles
-        this.memoryTiles.forEach(mt => mt.dom.classList.remove('flipped'));
+        this.memoryTiles.forEach(mt => {
+            if (mt) mt.dom.classList.remove('flipped');
+        });
 
         setTimeout(() => {
             countEl.classList.add('hidden');
@@ -576,9 +728,31 @@ class Game {
     renderMemoryGrid() {
         this.memGrid.innerHTML = '';
         this.memoryTiles.forEach((mt, idx) => {
+            if (mt === null) {
+                // Placeholder
+                const el = document.createElement('div');
+                el.className = 'mem-tile-placeholder';
+                this.memGrid.appendChild(el);
+                return;
+            }
+
             const el = document.createElement('div');
             el.className = 'mem-tile';
-            el.textContent = mt.type;
+            // el.textContent = mt.type; // Removed
+
+            // Sprite Logic for Memory Tile (Scale 60/128 approx 0.46875)
+            let frame = { x: 840, y: 720 }; // Default
+
+            const key = SPRITE_MAP[mt.type];
+            if (key && SPRITE_FRAMES[key]) {
+                frame = SPRITE_FRAMES[key];
+            }
+
+            const MEM_SCALE = 60 / 128;
+            const bgX = -frame.x * MEM_SCALE;
+            const bgY = -frame.y * MEM_SCALE;
+            el.style.backgroundPosition = `${bgX}px ${bgY}px`;
+
             el.onclick = () => this.handleMemClick(mt, idx);
             this.memGrid.appendChild(el);
             mt.dom = el;
@@ -586,7 +760,9 @@ class Game {
     }
 
     startBlindInteraction(duration) {
-        this.memoryTiles.forEach(mt => mt.dom.classList.add('flipped'));
+        this.memoryTiles.forEach(mt => {
+            if (mt) mt.dom.classList.add('flipped');
+        });
         const timerEl = document.querySelector('.blind-timer');
         const timeVal = document.getElementById('blind-time');
         timerEl.classList.remove('hidden');
@@ -623,7 +799,7 @@ class Game {
                     this.memSelected = null;
                     this.memLocked = false;
 
-                    if (this.memoryTiles.every(t => t.matched)) this.endBlindMode(true);
+                    if (this.memoryTiles.filter(t => t !== null).every(t => t.matched)) this.endBlindMode(true);
                 }, 500);
 
                 this.score += 200;
@@ -644,57 +820,65 @@ class Game {
         clearInterval(this.blindInterval);
         this.overlay.classList.add('hidden');
         this.isBlindMode = false;
-
         this.audio.startBGM('main');
 
         // Check Success
-        const allMatched = this.memoryTiles.every(t => t.matched);
+        // forcedSuccess passed from handleMemClick if all matched early
+        const allMatched = forcedSuccess || this.memoryTiles.filter(t => t !== null).every(t => t.matched);
 
         // Remove matched tiles from board (Consolation/Progress)
+        // Ensure tiles are actually removed from board logic
         let removeCount = 0;
         this.memoryTiles.forEach(mt => {
-            if (mt.matched && !mt.origin.removed) {
+            if (mt && mt.matched && !mt.origin.removed) {
                 mt.origin.removed = true;
                 mt.origin.el.style.display = 'none';
                 removeCount++;
             }
         });
 
+        const t = TEXTS[this.currentLang];
+        const msgModal = document.getElementById('msg-modal');
+        const mTitle = document.getElementById('msg-title');
+        const mBody = document.getElementById('msg-body');
+        const mBtn = document.getElementById('msg-btn');
+
+        msgModal.classList.remove('hidden');
+
         if (allMatched) {
             this.rescueCount++;
-            this.flashVerifyLevel++; // Increase difficulty next time
+            this.flashVerifyLevel++;
             this.updateRescueUI();
-            this.audio.playVictory(); // Short victory sound
+            this.audio.playVictory();
 
-            // Visual Feedback specifically for Reward?
-            // For now, simple console or toast. The UI update is the main feedback.
-            // Maybe animate the shuffle button?
-            const btn = document.getElementById('btn-shuffle');
-            btn.classList.add('pulse-reward'); // We can add this class to CSS
-            setTimeout(() => btn.classList.remove('pulse-reward'), 1000);
+            // Success Msg
+            mTitle.textContent = t.msgSuccessTitle;
+            mBody.textContent = t.msgSuccessBody;
+            mBtn.textContent = t.btnContinue;
+            mTitle.style.color = '#ffd700';
 
-            // Show a quick toast text
-            const hud = document.getElementById('ui-hud');
-            const toast = document.createElement('div');
-            toast.textContent = "+1 🛡️ Rescue Charm!";
-            toast.style.position = 'absolute';
-            toast.style.color = '#4ade80';
-            toast.style.fontWeight = 'bold';
-            toast.style.fontSize = '1.5rem';
-            toast.style.top = '100%';
-            toast.style.left = '50%';
-            toast.style.transform = 'translateX(-50%)';
-            hud.appendChild(toast);
-            setTimeout(() => toast.remove(), 2000);
         } else {
-            // Failed to complete in time
-            // No penalty, but no reward.
+            // Failed
+            mTitle.textContent = t.msgFailTitle;
+            mBody.textContent = t.msgFailBody;
+            mBtn.textContent = t.btnBack;
+            mTitle.style.color = '#ff4500';
         }
 
-        if (removeCount > 0) this.board.checkBlockedStatus();
-
-        if (this.board.tiles.every(t => t.removed)) this.triggerVictory();
+        mBtn.onclick = () => {
+            msgModal.classList.add('hidden');
+            if (removeCount > 0) {
+                this.board.checkBlockedStatus();
+                // Check game victory just in case
+                if (this.board.tiles.every(t => t.removed)) this.triggerVictory();
+            }
+        };
     }
 }
 
-const game = new Game();
+// Init Game
+document.addEventListener('DOMContentLoaded', () => {
+    console.log("🚀 DOM Ready. Initializing Game...");
+    window.game = new Game();
+    console.log("✅ Game Initialized. Current Lang:", window.game.currentLang);
+});
